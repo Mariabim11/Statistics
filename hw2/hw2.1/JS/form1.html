@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 70%;
+      margin: 20px auto;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #333;
+      color: #fff;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="fileInput" accept=".txt">
+  <table id="wordFrequencyTable">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Absolute Frequency</th>
+        <th>Relative Frequency</th>
+        <th>Frequency Percentage</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    document.getElementById('fileInput').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          const text = e.target.result;
+          analyzeText(text);
+        };
+
+        reader.readAsText(file);
+      }
+    });
+
+    function analyzeText(text) {
+      const words = text.match(/\w+/g);
+      const wordCount = words.length;
+
+      const wordFrequency = {};
+      words.forEach(word => {
+        word = word.toLowerCase();
+        wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+      });
+
+      const tableBody = document.querySelector('#wordFrequencyTable tbody');
+      tableBody.innerHTML = '';
+
+      for (const word in wordFrequency) {
+        if (wordFrequency.hasOwnProperty(word)) {
+          const absoluteFrequency = wordFrequency[word];
+          const relativeFrequency = (absoluteFrequency / wordCount).toFixed(4);
+          const percentageFrequency = (relativeFrequency * 100).toFixed(2);
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${word}</td>
+            <td>${absoluteFrequency}</td>
+            <td>${relativeFrequency}</td>
+            <td>${percentageFrequency}%</td>
+          `;
+
+          tableBody.appendChild(row);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

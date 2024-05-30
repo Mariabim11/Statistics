@@ -1,0 +1,10 @@
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.csproj.AssemblyReference.cache
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.Form1.resources
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.Properties.Resources.resources
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.csproj.GenerateResource.cache
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.csproj.CoreCompileInputs.cache
+C:\Users\miche\source\repos\RandomApp\RandomApp\bin\Debug\RandomApp.exe.config
+C:\Users\miche\source\repos\RandomApp\RandomApp\bin\Debug\RandomApp.exe
+C:\Users\miche\source\repos\RandomApp\RandomApp\bin\Debug\RandomApp.pdb
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.exe
+C:\Users\miche\source\repos\RandomApp\RandomApp\obj\Debug\RandomApp.pdb

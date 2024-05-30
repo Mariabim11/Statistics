@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Variates Distribution</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+    </style>
+    <h1>Insert values to calculate the frequency!</h1>
+</head>
+
+<body>
+    <div class="container">
+        <label for="N">Enter N (number of random variates):</label>
+        <input type="number" id="N" value="1000">
+        <br>
+        <label for="k">Enter k (number of intervals):</label>
+        <input type="number" id="k" value="10">
+        <br>
+        <button onclick="generate()">Generate Distribution</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function generate() {
+            var N = parseInt(document.getElementById("N").value);
+            var k = parseInt(document.getElementById("k").value);
+
+            // Generate random variates
+            var variates = Array.from({ length: N }, () => Math.random());
+
+    
+            var contatore = new Array(k).fill(0);
+            variates.forEach(function (value) {
+                var index = Math.floor(value * k);
+                contatore[index]++;
+            });
+
+            // Display the results in a table
+            var resultsTable = "<table><tr><th>Interval</th><th>Frequency</th></tr>";
+            for (var i = 0; i < k; i++) {
+                var lowerBound = (i / k).toFixed(2);
+                var upperBound = ((i + 1) / k).toFixed(2);
+                var interval = `[${lowerBound}, ${upperBound})`;
+                resultsTable += `<tr><td>${interval}</td><td>${contatore[i]}</td></tr>`;
+            }
+            resultsTable += "</table>";
+
+            // Output the results on the HTML page
+            document.getElementById("results").innerHTML = resultsTable;
+        }
+    </script>
+</body>
+
+</html>

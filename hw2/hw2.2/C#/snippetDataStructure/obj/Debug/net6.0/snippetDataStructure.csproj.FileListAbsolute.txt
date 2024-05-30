@@ -1,0 +1,14 @@
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\bin\Debug\net6.0\snippetDataStructure.exe
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\bin\Debug\net6.0\snippetDataStructure.deps.json
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\bin\Debug\net6.0\snippetDataStructure.runtimeconfig.json
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\bin\Debug\net6.0\snippetDataStructure.dll
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\bin\Debug\net6.0\snippetDataStructure.pdb
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.AssemblyInfoInputs.cache
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.AssemblyInfo.cs
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.csproj.CoreCompileInputs.cache
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.dll
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\refint\snippetDataStructure.dll
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.pdb
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\snippetDataStructure.genruntimeconfig.cache
+C:\Users\miche\source\repos\snippetDataStructure\snippetDataStructure\obj\Debug\net6.0\ref\snippetDataStructure.dll
