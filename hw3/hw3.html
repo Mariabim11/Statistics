@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> HW3 - Penetration Simulation</title>
+    <style>
+        body {
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4c53af;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"],
+        input[type="button"] {
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="button"] {
+            background-color: #4c53af;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="button"]:hover {
+            background-color: #4c53af;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 40px;
+        }
+
+        .graph-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .graph-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .graph-box canvas {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Penetration Simulation</h1>
+    </header>
+
+    <main>
+        <form id="Form">
+            <label for="N">Number of attacks</label>
+            <input type="number" id="N" value="0" min="0" />
+            <label for="M">Number of systems</label>
+            <input type="number" id="M" value="0" min="0" />
+            <label for="P">Probability of breach</label>
+            <input type="number" id="P" value="0" step="0.01" min="0" max="1" />
+            <input type="button" id="start" value="Start attack!" onclick="checkForm()" />
+        </form>
+
+        <h2>Attack Graphs</h2>
+        <div class="graph-container">
+            <div class="graph-box">
+                <canvas id="attack_graph"></canvas>
+            </div>
+            <div class="graph-box">
+                <canvas id="attack_histogram"></canvas>
+            </div>
+        </div>
+
+        <h2>Cumulative Frequency Graphs</h2>
+        <div class="graph-container">
+            <div class="graph-box">
+                <canvas id="cumulative_graph"></canvas>
+            </div>
+            <div class="graph-box">
+                <canvas id="cumulative_histogram"></canvas>
+            </div>
+        </div>
+
+        <h2>Relative Frequency Graphs</h2>
+        <div class="graph-container">
+            <div class="graph-box">
+                <canvas id="relative_graph"></canvas>
+            </div>
+            <div class="graph-box">
+                <canvas id="relative_histogram"></canvas>
+            </div>
+        </div>
+
+        <h2>Normalized Frequency Graphs</h2>
+        <div class="graph-container">
+            <div class="graph-box">
+                <canvas id="normalized_graph"></canvas>
+            </div>
+            <div class="graph-box">
+                <canvas id="normalized_histogram"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script>
+
+        function checkForm() {
+
+            "use strict"
+
+            let N = parseInt(document.getElementById('N').value);
+            let M = parseInt(document.getElementById('M').value);
+            let P = parseFloat(document.getElementById('P').value);
+
+            if (isNaN(N) | N < 1) {
+                alert("INVALID VALUE FOR NUMBER OF ATTACKS");
+                return false;
+            }
+
+            if (isNaN(M) | M < 1) {
+                alert("INVALID VALUE FOR NUMBER OF SERVERS");
+                return false;
+            }
+
+            if (isNaN(P) | P < 0 | P > 1) {
+                alert("INVALID VALUE FOR PROBABILITY OF BREACH");
+                return false;
+            }
+
+            $(document).ready(function () {
+                $(".draggable").draggable();
+            });
+
+
+            let security_scores_graph_canvas = document.getElementById('attack_graph');
+            let security_scores_graph_container = document.getElementById('attack_graph_container');
+            addHandlersForResize(security_scores_graph_canvas, security_scores_graph_container);
+
+            let security_scores_histogram_canvas = document.getElementById('attack_histogram');
+            let security_scores_histogram_container = document.getElementById('attack_histogram_container');
+            addHandlersForResize(security_scores_histogram_canvas, security_scores_histogram_container);
+
+            let absolute_frequency_graph_canvas = document.getElementById('cumulative_graph');
+            let absolute_frequency_graph_container = document.getElementById('cumulative_graph_container');
+            addHandlersForResize(absolute_frequency_graph_canvas, absolute_frequency_graph_container);
+
+            let absolute_frequency_histogram_canvas = document.getElementById('cumulative_histogram');
+            let absolute_frequency_histogram_container = document.getElementById('cumulative_histogram_container');
+            addHandlersForResize(absolute_frequency_histogram_canvas, absolute_frequency_histogram_container);
+
+            let relative_frequency_graph_canvas = document.getElementById('relative_graph');
+            let relative_frequency_graph_container = document.getElementById('relative_graph_container');
+            addHandlersForResize(relative_frequency_graph_canvas, relative_frequency_graph_container);
+
+            let relative_frequency_histogram_canvas = document.getElementById('relative_histogram');
+            let relative_frequency_histogram_container = document.getElementById('relative_histogram_container');
+            addHandlersForResize(relative_frequency_histogram_canvas, relative_frequency_histogram_container);
+
+            let ratio_frequency_graph_canvas = document.getElementById('normalized_graph');
+            let ratio_frequency_graph_container = document.getElementById('normalized_graph_container');
+            addHandlersForResize(ratio_frequency_graph_canvas, ratio_frequency_graph_container);
+
+            let ratio_frequecy_histogram_canvas = document.getElementById('normalized_histogram');
+            let ratio_frequecy_histogram_container = document.getElementById('normalized_histogram_container');
+            addHandlersForResize(ratio_frequecy_histogram_canvas, ratio_frequecy_histogram_container);
+
+            clearCanvas();
+
+            startSimulation(N, M, P);
+
+        }
+
+
+        function startSimulation(N, M, P) {
+
+            "use strict"
+
+            let breached = createAttackGraphs(N, M, P);
+            createAbsoluteFrequencyGraph(breached);
+            createRelativeFrequencyGraph(breached, M);
+            createRatioFrequencyGraph(breached, M);
+
+        }
+
+
+        function createAttackGraphs(N, M, P) {
+
+            "use strict"
+
+            let breached = new Array(N).fill(0);
+            let systems_list = [];
+
+            for (let i = 0; i < M; i++) {
+
+                let system_scores = []
+                let score = 0;
+
+                for (let j = 0; j < N; j++) {
+
+                    if (Math.random() < P) {
+                        // BREACH
+                        score -= 1;
+                        breached[j] += 1;
+                    }
+
+                    else {
+                        // SAFE
+                        score += 1;
+                    }
+
+                    system_scores.push(score);
+                }
+
+                systems_list.push(system_scores);
+
+            }
+
+            // SCORES DISTRIBUTION
+            let final_results = new Array(M).fill(0);
+            for (let i = 0; i < M; i++) { final_results[i] = systems_list[i][N - 1]; }
+            final_results.sort(function (a, b) { return a - b; });
+
+            let histogram_labels = [];
+            let current = Number.MIN_SAFE_INTEGER;
+            for (let i = 0; i < M; i++) {
+                if (final_results[i] == current) continue;
+                current = final_results[i];
+                histogram_labels.push(current);
+            }
+
+            let histogram_count = [];
+            let conta;
+            for (let i = 0; i < histogram_labels.length; i++) {
+                conta = 0;
+                for (let j = 0; j < M; j++) {
+                    if (final_results[j] == histogram_labels[i]) {
+                        conta += 1;
+                    }
+                }
+                histogram_count.push(conta);
+            }
+
+
+
+            // DRAW SECURITY SCORES
+            let ctx1 = document.getElementById('attack_graph').getContext('2d');
+            let ctx2 = document.getElementById('attack_histogram').getContext('2d');
+
+            let security_scores_chart_config = {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                    datasets: systems_list.map((trajectory, i) => ({
+                        label: `Systems ${i + 1}`,
+                        data: trajectory,
+                        borderColor: `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},1)`,
+                        fill: false,
+                    })),
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'SECURITY SCORES CHART'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    }
+                }
+            };
+
+
+            let security_scores_histogram_config = {
+                type: 'bar',
+                data: {
+                    labels: histogram_labels,
+                    datasets: [{
+                        data: histogram_count,
+                        backgroundColor: 'rgba(255, 0, 0, 1)',
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'SECURITY SCORES DISTRIBUTION HISTOGRAM'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            };
+
+            new Chart(ctx1, security_scores_chart_config);
+            new Chart(ctx2, security_scores_histogram_config);
+
+            return breached;
+        }
+
+
+        function createAbsoluteFrequencyGraph(breached) {
+
+            "use strict"
+
+            let cumulative_breaches = [];
+            let conta = 0;
+
+            for (let i = 0; i < breached.length; i++) {
+                conta += breached[i];
+                cumulative_breaches.push(conta);
+            }
+
+
+            let histogram_labels = [];
+            let current = Number.MIN_SAFE_INTEGER;
+            breached.sort(function (a, b) { return a - b; });
+            for (let i = 0; i < breached.length; i++) {
+                if (current == breached[i]) continue;
+                current = breached[i];
+                histogram_labels.push(current);
+            }
+
+            let histogram_count = [];
+            for (let i = 0; i < histogram_labels.length; i++) {
+                conta = 0;
+                for (let j = 0; j < breached.length; j++) {
+                    if (breached[j] == histogram_labels[i]) {
+                        conta += 1;
+                    }
+                }
+                histogram_count.push(conta);
+            }
+
+
+
+            let ctx1 = document.getElementById('cumulative_graph').getContext('2d');
+            let ctx2 = document.getElementById('cumulative_histogram').getContext('2d');
+
+
+            let absolute_frequency_graph_config = {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: cumulative_breaches.length }, (_, i) => `Attack ${i + 1}`),
+                    datasets: [{
+                        data: cumulative_breaches
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'BREACHES ABSOLUTE FREQUENCY CHART'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    }
+                }
+            };
+
+            let absolute_frequency_histogram_config = {
+                type: 'bar',
+                data: {
+                    labels: histogram_labels,
+                    datasets: [{
+                        data: histogram_count,
+                        backgroundColor: 'rgba(0, 0, 255, 1)',
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'BREACHES DISTRIBUTION HISTOGRAM'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            };
+
+            new Chart(ctx1, absolute_frequency_graph_config);
+            new Chart(ctx2, absolute_frequency_histogram_config);
+
+        }
+
+
+        function createRelativeFrequencyGraph(breached, M) {
+
+            "use strict"
+
+            let cumulative_breaches = [];
+            let conta = 0;
+
+            for (let i = 0; i < breached.length; i++) {
+                conta += breached[i];
+                cumulative_breaches.push(conta / (i * M));
+            }
+
+
+            let histogram_labels = [];
+            let current = Number.MIN_SAFE_INTEGER;
+            breached.sort(function (a, b) { return a - b; });
+            for (let i = 0; i < breached.length; i++) {
+                if (current == breached[i]) continue;
+                current = breached[i];
+                histogram_labels.push(current);
+            }
+
+            let histogram_count = [];
+            conta = 0;
+            for (let i = 0; i < histogram_labels.length; i++) {
+                conta += breached[i];
+                histogram_count.push(conta / (i * M));
+            }
+
+
+
+            let ctx1 = document.getElementById('relative_graph').getContext('2d');
+            let ctx2 = document.getElementById('relative_histogram').getContext('2d');
+
+
+            let relative_frequency_graph_config = {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: cumulative_breaches.length }, (_, i) => `Attack ${i + 1}`),
+                    datasets: [{
+                        data: cumulative_breaches
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'RELATIVE BREACHES FREQUENCY CHART'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    }
+                }
+            };
+
+            let relative_frequency_histogram_config = {
+                type: 'bar',
+                data: {
+                    labels: histogram_labels,
+                    datasets: [{
+                        data: histogram_count,
+                        backgroundColor: 'rgba(0, 0, 255, 1)',
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'RELATIVE BREACHES FREQUENCY DISTRIBUTION HISTOGRAM'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            };
+
+            new Chart(ctx1, relative_frequency_graph_config);
+            new Chart(ctx2, relative_frequency_histogram_config);
+
+        }
+
+
+        function createRatioFrequencyGraph(breached, M) {
+
+            "use strict"
+
+            let cumulative_breaches = [];
+            let conta = 0;
+
+            for (let i = 0; i < breached.length; i++) {
+                conta += breached[i];
+                cumulative_breaches.push(conta / (Math.sqrt((i * M))));
+            }
+
+
+            let histogram_labels = [];
+            let current = Number.MIN_SAFE_INTEGER;
+            breached.sort(function (a, b) { return a - b; });
+            for (let i = 0; i < breached.length; i++) {
+                if (current == breached[i]) continue;
+                current = breached[i];
+                histogram_labels.push(current);
+            }
+
+            let histogram_count = [];
+            conta = 0;
+            for (let i = 0; i < histogram_labels.length; i++) {
+                conta += breached[i];
+                histogram_count.push(conta / (Math.sqrt((i * M))));
+            }
+
+
+
+            let ctx1 = document.getElementById('normalized_graph').getContext('2d');
+            let ctx2 = document.getElementById('normalized_histogram').getContext('2d');
+
+
+            let normalized_frequency_graph_config = {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: cumulative_breaches.length }, (_, i) => `Attack ${i + 1}`),
+                    datasets: [{
+                        data: cumulative_breaches
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'NORMALIZED BREACHES FREQUENCY CHART'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    }
+                }
+            };
+
+            let normalized_frequency_histogram_config = {
+                type: 'bar',
+                data: {
+                    labels: histogram_labels,
+                    datasets: [{
+                        data: histogram_count,
+                        backgroundColor: 'rgba(0, 0, 255, 1)',
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'NORMALIZED BREACHES FREQUENCY DISTRIBUTION HISTOGRAM'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            };
+
+            new Chart(ctx1, normalized_frequency_graph_config);
+            new Chart(ctx2, normalized_frequency_histogram_config);
+
+        }
+
+
+        function addHandlersForResize(element, container) {
+
+            let isResizing = false;
+            let resizeOffsetX, resizeOffsetY;
+
+            element.addEventListener("mousedown", (event) => {
+                if (event.button === 2) {
+                    const rect = element.getBoundingClientRect();
+                    resizeOffsetX = event.clientX - rect.right;
+                    resizeOffsetY = event.clientY - rect.bottom;
+                    isResizing = true;
+                }
+            });
+
+            element.addEventListener("mousemove", (event) => {
+                if (isResizing) {
+                    element.style.width = event.clientX - element.getBoundingClientRect().left - resizeOffsetX + "px";
+                    element.style.height = event.clientY - element.getBoundingClientRect().top - resizeOffsetY + "px";
+                    container.style.width = event.clientX - element.getBoundingClientRect().left - resizeOffsetX + "px";
+                    container.style.height = event.clientY - element.getBoundingClientRect().top - resizeOffsetY + "px";
+                }
+            });
+
+            element.addEventListener("mouseup", () => {
+                isResizing = false;
+            });
+
+
+            element.addEventListener("resize", () => {
+                element.style.width = container.clientWidth + "px";
+                element.style.height = container.clientHeight + "px";
+                container.style.width = container.clientWidth + "px";
+                container.style.height = container.clientHeight + "px";
+            });
+        }
+
+
+        function clearCanvas() {
+            let chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+                chartStatus.destroy();
+            }
+
+            let security_scores_graph_canvas = Chart.getChart('attack_graph');
+            if (security_scores_graph_canvas != undefined) security_scores_graph_canvas.destroy();
+
+            let security_scores_histogram_canvas = Chart.getChart('attack_histogram');
+            if (security_scores_histogram_canvas != undefined) security_scores_histogram_canvas.destroy();
+
+            let absolute_frequency_graph_canvas = Chart.getChart('cumulative_graph');
+            if (absolute_frequency_graph_canvas != undefined) absolute_frequency_graph_canvas.destroy();
+
+            let absolute_frequency_histogram_canvas = Chart.getChart('cumulative_histogram');
+            if (absolute_frequency_histogram_canvas != undefined) absolute_frequency_histogram_canvas.destroy();
+
+            let relative_frequency_graph_canvas = Chart.getChart('relative_graph');
+            if (relative_frequency_graph_canvas != undefined) relative_frequency_graph_canvas.destroy();
+
+            let relative_frequency_histogram_canvas = Chart.getChart('relative_histogram');
+            if (relative_frequency_histogram_canvas != undefined) relative_frequency_histogram_canvas.destroy();
+
+            let ratio_frequency_graph_canvas = Chart.getChart('normalized_graph');
+            if (ratio_frequency_graph_canvas != undefined) ratio_frequency_graph_canvas.destroy();
+
+            let ratio_frequecy_histogram_canvas = Chart.getChart('normalized_histogram');
+            if (ratio_frequecy_histogram_canvas != undefined) ratio_frequecy_histogram_canvas.destroy();
+        }
+
+    </script>
+
+
+</body>
+
+
+</html>
