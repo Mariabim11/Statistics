@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "7Nb310NJwDkibjYsnO1nV1l4QAbXETNnzYqTj30KvqMMEIYf59P9ItIt6h5xOZKBezS88iQX0VljnpkpfZu/lA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\miche\\source\\repos\\snippetDataStructure\\snippetDataStructure\\snippetDataStructure.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\miche\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\miche\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
+    "C:\\Users\\miche\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
+    "C:\\Users\\miche\\.nuget\\packages\\system.runtime\\4.3.0\\system.runtime.4.3.0.nupkg.sha512"
+  ],
+  "logs": []
+}
