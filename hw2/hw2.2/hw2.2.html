@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Structures in JavaScript</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .code-block {
+      background-color: #f0f0f0;
+      border-left: 5px solid #007bff;
+      padding: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h3 {
+      font-size: 1.5em;
+      color: #333;
+    }
+    pre {
+      overflow-x: auto;
+    }
+    code {
+      display: block;
+      padding: 10px;
+      background: #e8e8e8;
+      border-radius: 4px;
+      font-size: 1em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<div class="code-block">
+  <h3>Array Example</h3>
+  <pre>
+    <code>
+let array = [0, 1, 2, 3, 4, 5];
+
+array.forEach((element) => {
+  // console.log(element);
+});
+
+for (let i = 0; i < array.length; i++) {
+  if (array[i] === 2) {
+    continue;
+  } else if (array[i] === 4) {
+    break;
+  }
+  // console.log(array[i]);
+}
+
+array.push(3);
+array.pop();
+array[2];
+array[2] = "Hello";
+array.includes("Hello");
+array.sort();
+    </code>
+  </pre>
+</div>
+
+<div class="code-block">
+  <h3>Dictionary Example</h3>
+  <pre>
+    <code>
+let dictionary = {
+  key1: "value1",
+  key2: "value2",
+  key3: "value3",
+};
+
+const entries = Object.entries(dictionary);
+
+for (const [key, value] of entries) {
+  console.log(key + ": " + value);
+}
+
+dictionary.key3 = "updated-value3";
+
+delete dictionary.key3;
+
+let val1 = dictionary.key1;
+
+dictionary.key1 = "modified-value1";
+
+if (dictionary.key2 !== undefined) {
+  console.log("Key exists");
+} else {
+  console.log("Key does not exist");
+}
+
+const values = Object.values(dictionary);
+if (values.includes("value2")) {
+  console.log("Value exists");
+} else {
+  console.log("Value does not exist");
+    </code>
+  </pre>
+</div>
+
+<div class="code-block">
+  <h3>HashSet Example</h3>
+  <pre>
+    <code>
+const mySet = new Set();
+mySet.add(1);
+mySet.add(5);
+mySet.add("text");
+mySet.add({ a: 1, b: 2 });
+mySet.add({ a: 1, b: 2 });
+
+for (const element of mySet) {
+  console.log(element);
+}
+
+mySet.add("new text");
+mySet.delete(5);
+mySet.has(1);
+    </code>
+  </pre>
+</div>
+
+<div class="code-block">
+  <h3>Queue and Stack Example</h3>
+  <pre>
+    <code>
+const queue = ["Task 1", "Task 2"];
+queue.push("Task 3");
+const taskQueue = queue.shift();
+
+const stack = ["Task 1", "Task 2"];
+stack.push("Task 3");
+const taskStack = stack.pop();
+    </code>
+  </pre>
+</div>
+
+<div class="code-block">
+  <h3>Linked List Example</h3>
+  <pre>
+    <code>
+class Node {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
+}
+
+class LinkedList {
+  constructor() {
+    this.head = null;
+  }
+
+  append(data) {
+    const newNode = new Node(data);
+    if (!this.head) {
+      this.head = newNode;
+    } else {
+      let current = this.head;
+      while (current.next) {
+        current = current.next;
+      }
+      current.next = newNode;
+    }
+  }
+
+  display() {
+    let current = this.head;
+    while (current) {
+      console.log(current.data);
+      current = current.next;
+    }
+  }
+}
+
+const myList = new LinkedList();
+myList.append("Item 1");
+myList.append("Item 2");
+myList.append("Item 3");
+
+myList.display();
+    </code>
+  </pre>
+</div>
+
+</body>
+</html>
