@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Score Animation</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        form label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        form input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="Form">
+        <label for="N">Number of attacks</label>
+        <input type="number" id="N" value="100" min="0" />
+        <label for="M">Number of systems</label>
+        <input type="number" id="M" value="50" min="0" />
+        <label for="P">Probability</label>
+        <input type="number" id="P" value="0.8" step="0.01" min="0" max="1" />
+        <label for="S">Security Score</label>
+        <input type="number" id="S" value="10" step="0.01" min="0" max="100" />
+    </form>
+    <button onclick="check()">Start Attacks!</button>
+    <canvas id="scoreCanvas" width="1500" height="900"></canvas>
+
+    <script>
+        "use strict";
+        const canvas = document.getElementById("scoreCanvas");
+        const ctx = canvas.getContext("2d");
+
+        class Interval {
+            constructor(upper, lower, count) {
+                this.upper = upper;
+                this.lower = lower;
+                this.count = count;
+            }
+        }
+
+        class Rectangle {
+            constructor(x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+            }
+
+            left() {
+                return this.x;
+            }
+
+            top() {
+                return this.y;
+            }
+
+            right() {
+                return this.x + this.width;
+            }
+
+            bottom() {
+                return this.y + this.height;
+            }
+
+            aspectRatio() {
+                return this.width / this.height || 1;
+            }
+
+            drawRectangle(ctx, lineColor, lineWidth, lineDash) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(this.x, this.y, this.width, this.height);
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = lineWidth;
+                ctx.setLineDash(lineDash);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        const viewRect = new Rectangle(10, 10, 1000, 400);
+
+        class Prof2dUtilities {
+            static transformX(x, min_x, rangeL_x, left, width) {
+                return left + width * (x - min_x) / rangeL_x;
+            }
+
+            static transformY(y, min_y, rangeL_y, top, height) {
+                return top + height - (height * (y - min_y) / rangeL_y);
+            }
+        }
+
+        class Histogram {
+            static verticalHistoFromIntervals(ctx, intervals, y_min, y_range, viewRect, strokeStyle, lineWidth, fillStyle) {
+                let maxcount = 0;
+
+                for (const interval of intervals) {
+                    maxcount = Math.max(maxcount, interval.count);
+                }
+
+                for (let i = intervals.length - 1; i >= 0; i--) {
+                    const interval = intervals[i];
+                    let x_rect = viewRect.x;
+                    let width_rect = viewRect.width * interval.count / maxcount;
+                    let y_rect_top = Prof2dUtilities.transformY(interval.upper, y_min, y_range, viewRect.y, viewRect.height);
+                    let y_rect_bottom = Prof2dUtilities.transformY(interval.lower, y_min, y_range, viewRect.y, viewRect.height);
+                    let height_rect = y_rect_bottom - y_rect_top;
+                    let rectInterval = new Rectangle(x_rect, y_rect_top, width_rect, height_rect);
+
+                    ctx.rect(rectInterval.x, rectInterval.y, rectInterval.width, rectInterval.height);
+
+                    const gradient = ctx.createLinearGradient(rectInterval.x, rectInterval.y, rectInterval.x, rectInterval.y + rectInterval.height);
+                    gradient.addColorStop(0, 'red');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(rectInterval.x, rectInterval.y, rectInterval.width, rectInterval.height);
+                }
+            }
+        }
+
+        function check() {
+            let currentAttack = 1;
+            const numSystems = parseInt(document.getElementById('M').value);
+            const numAttacks = parseInt(document.getElementById('N').value);
+            const penetrationProbability = parseFloat(document.getElementById('P').value);
+            const S = parseInt(document.getElementById('S').value);
+            const values = [-20, -30, -40, -50, -60, -70, -80, -90, -100];
+
+            if (isNaN(numSystems) || numSystems < 1) {
+                alert("INVALID NUMBER OF SYSTEMS");
+                return false;
+            }
+            if (isNaN(penetrationProbability) || penetrationProbability < 0 || penetrationProbability > 1) {
+                alert("INVALID PROBABILITY OF ATTACKS");
+                return false;
+            }
+
+            let securityTrajectories = calculateSecScore(numSystems, numAttacks, penetrationProbability);
+
+            let allTrajectories = securityTrajectories.flat();
+            let y_min = Math.min(...allTrajectories);
+            y_min = Math.min(y_min, -10);
+            let y_max = Math.max(...allTrajectories);
+
+            let y_range = Math.max(Math.abs(y_max), Math.abs(y_min)) * 2;
+            y_min = Math.abs(y_max) > Math.abs(y_min) ? -y_max : y_min;
+
+            function startSimulation() {
+                if (currentAttack <= numAttacks) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    viewRect.drawRectangle(ctx, "black", 2, [1, 1]);
+
+                    drawLabels(viewRect, y_range);
+                    drawScores(securityTrajectories, currentAttack, Math.abs(y_min), y_range, viewRect);
+
+                    if (currentAttack >= numAttacks) {
+                        const frequenzeRaggiuntoP = calcolaFrequenze(securityTrajectories, S, values);
+                        printHistogram(numAttacks, frequenzeRaggiuntoP, values);
+                    }
+
+                    currentAttack++;
+
+                    if (currentAttack <= numAttacks) {
+                        setTimeout(startSimulation, frameDuration);
+                    }
+                } else {
+                    currentAttack = 1;
+                    startSimulation();
+                }
+            }
+
+            const frameDuration = 0;
+            startSimulation();
+
+            function drawScores(data, frame, y_min, y_range, viewRect) {
+                for (let system = 0; system < numSystems; system++) {
+                    const currentTrajectory = data[system];
+                    const x_start = viewRect.left();
+                    const x_step = viewRect.width / numAttacks;
+                    const y_start = viewRect.top() - viewRect.height;
+                    let x = x_start;
+                    let y = Prof2dUtilities.transformY(currentTrajectory[0], y_min, y_range, y_start, viewRect.height);
+                    for (let i = 0; i <= frame; i++) {
+                        const outcome = currentTrajectory[i];
+                        ctx.strokeStyle = "black";
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        x += x_step;
+                        y = Prof2dUtilities.transformY(outcome, y_min, y_range, y_start, viewRect.height);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            function calculateSecScore(numSystems, numAttacks, penetrationProbability) {
+                const securityTrajectories = [];
+                for (let system = 0; system < numSystems; system++) {
+                    const scores = [];
+                    let score = 0;
+                    for (let attack = 0; attack < numAttacks; attack++) {
+                        const outcome = Math.random() <= penetrationProbability ? -1 : 1;
+                        score += outcome;
+                        scores.push(score);
+                    }
+                    securityTrajectories.push(scores);
+                }
+                return securityTrajectories;
+            }
+
+            function drawLabels(rect, yrange) {
+                const ctx = canvas.getContext("2d");
+                const xAxisLabelY = rect.bottom() + 10;
+                const yAxisLabelX = rect.left() - 10;
+                const labelPadding = 10;
+                const yrangeHalf = yrange / 2;
+                const yStep = Math.floor(yrange / 4);
+                const xStep = Math.floor(numAttacks / 5);
+
+                for (let i = 0; i <= numAttacks; i += xStep) {
+                    const x = rect.left() + i * (rect.width / numAttacks);
+                    const label = i.toString();
+                    ctx.fillStyle = "black";
+                    ctx.fillText(label, x - labelPadding, xAxisLabelY);
+                }
+
+                for (let i = -yrangeHalf; i <= yrangeHalf; i += yStep) {
+                    const y = rect.top() + (i + yrangeHalf) * (rect.height / yrange);
+                    const label = -i.toString();
+                    ctx.fillStyle = "black";
+                    ctx.fillText(label, yAxisLabelX, y);
+                }
+
+                ctx.stroke();
+            }
+
+            function calculateIntervals(securityTrajectories, data, systemIndex, S) {
+                const systemData = data.map(Number);
+                const systemTraj = securityTrajectories.map(subArray => subArray[systemIndex - 1]);
+                const systemTrajMin = securityTrajectories.map(subArray => Math.min(...subArray));
+                const minValue = Math.min(...systemTrajMin);
+                const startingValue = Math.min(minValue, -100);
+
+                const maxValue = Math.max(...systemTraj);
+                const endingValue = Math.max(S, maxValue);
+                var numIntervals = 0;
+
+                for (let i = startingValue; i <= endingValue; i++) {
+                    numIntervals++;
+                }
+
+                const intervalSize = 1;
+                const intervals = [];
+                const freq = calcolaFrequenze(securityTrajectories, S, data);
+                var g = freq.length - 1;
+
+                for (let i = 0; i < numIntervals; i++) {
+                    const lower = startingValue + i * intervalSize;
+                    const upper = lower + intervalSize;
+
+                    var count = 0;
+                    if (!data.includes(lower) && lower != S) {
+                        count = 0;
+                    } else if (lower == S) {
+                        count = freq[0];
+                    } else {
+                        count = freq[g];
+                        g--;
+                    }
+
+                    const interval = new Interval(upper, lower, count);
+                    intervals.push(interval);
+                }
+
+                intervals.sort((a, b) => a.upper - b.upper);
+                return intervals;
+            }
+
+            function calcolaFrequenze(securityScores, S, P) {
+                let frequenzeRaggiuntoS = 0;
+                let frequenzeRaggiuntoP = Array(P.length).fill(0);
+                let valoriRaggiunti = new Set();
+
+                for (let i = 0; i < securityScores.length; i++) {
+                    let sistemaRaggiuntoS = false;
+                    let sistemaRaggiuntoP = false;
+                    for (let j = 0; j < securityScores[i].length; j++) {
+                        if (securityScores[i][j] >= S && sistemaRaggiuntoP == false) {
+                            sistemaRaggiuntoS = true;
+                            frequenzeRaggiuntoS++;
+                            break;
+                        }
+
+                        for (let k = P.length - 1; k >= 0; k--) {
+                            if (securityScores[i][j] <= P[k] && !valoriRaggiunti.has(k)) {
+                                sistemaRaggiuntoP = true;
+                                frequenzeRaggiuntoP[k]++;
+                                valoriRaggiunti.add(k);
+                            }
+                        }
+                    }
+                    valoriRaggiunti.clear();
+                }
+                frequenzeRaggiuntoP.reverse();
+                frequenzeRaggiuntoP.push(frequenzeRaggiuntoS);
+                frequenzeRaggiuntoP.reverse();
+
+                return frequenzeRaggiuntoP;
+            }
+
+            function printHistogram(numAttack, frequenzeRaggiuntoP, values) {
+                const intervals = calculateIntervals(securityTrajectories, values, numAttack, S);
+                let histoHeight = viewRect.height;
+                let y_offset = (viewRect.height - histoHeight) * 0.5;
+                const histoRect1 = new Rectangle(Prof2dUtilities.transformX(numAttack, 0, numAttacks, viewRect.x, viewRect.width), viewRect.y + y_offset, 150, histoHeight);
+
+                Histogram.verticalHistoFromIntervals(ctx, intervals, y_min, y_range, histoRect1, "yellow", 3, "yellow", frequenzeRaggiuntoP, values);
+            }
+        }
+
+        $(document).ready(function () {
+            $("#scoreCanvas").draggable();
+        });
+
+        let isResizing = false;
+        let resizeOffsetX, resizeOffsetY;
+
+        function addHandlersForResize(element) {
+            element.addEventListener("mousedown", (event) => {
+                if (event.button === 2) {
+                    const rect = element.getBoundingClientRect();
+                    resizeOffsetX = event.clientX - rect.right;
+                    resizeOffsetY = event.clientY - rect.bottom;
+                    isResizing = true;
+                }
+            });
+
+            element.addEventListener("mousemove", (event) => {
+                if (isResizing) {
+                    element.style.width = event.clientX - element.getBoundingClientRect().left - resizeOffsetX + "px";
+                    element.style.height = event.clientY - element.getBoundingClientRect().top - resizeOffsetY + "px";
+                }
+            });
+
+            element.addEventListener("mouseup", () => {
+                isResizing = false;
+            });
+
+            element.addEventListener("resize", () => {
+                element.style.width = container.clientWidth + "px";
+                element.style.height = container.clientHeight + "px";
+            });
+        }
+    </script>
+</body>
+
+</html>
