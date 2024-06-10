@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central Limit Theorem Simulation</title>
+  <!-- Include Plotly library -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <h1>Central Limit Theorem Simulation</h1>
+  <div id="chart"></div>
+
+  <script>
+    // Function to generate random samples from a given distribution
+    function generateSample(size, distribution) {
+      let sample = [];
+      for (let i = 0; i < size; i++) {
+        sample.push(distribution());
+      }
+      return sample;
+    }
+
+    // Normal distribution generator
+    function normalDistribution(mean, stdDev) {
+      return mean + stdDev * Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+    }
+
+    // Simulation parameters
+    const sampleSize = 100;
+    const numSamples = 1000;
+    const distributionMean = 0;
+    const distributionStdDev = 1;
+
+    // Perform the simulation
+    let means = [];
+    for (let i = 0; i < numSamples; i++) {
+      let sample = generateSample(sampleSize, () => normalDistribution(distributionMean, distributionStdDev));
+      means.push(sample.reduce((a, b) => a + b) / sampleSize);
+    }
+
+    // Plot the histogram of sample means
+    let trace = {
+      x: means,
+      type: 'histogram',
+      autobinx: false,
+      xbins: {
+        start: -3,
+        end: 3,
+        size: 0.1
+      }
+    };
+    let layout = {
+      title: 'Distribution of Sample Means (CLT Simulation)',
+      xaxis: {
+        title: 'Sample Mean'
+      },
+      yaxis: {
+        title: 'Frequency'
+      }
+    };
+    Plotly.newPlot('chart', [trace], layout);
+  </script>
+</body>
+</html>

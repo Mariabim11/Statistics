@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law of Large Numbers Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Law of Large Numbers Simulation</h1>
+    <canvas id="llnChart" width="800" height="400"></canvas>
+
+    <script>
+        // Parameters
+        const mu = 0;  // Mean of the normal distribution
+        const sigma = 1;  // Standard deviation of the normal distribution
+        const nSamples = 10000;  // Number of samples
+
+        // Generate random samples from a normal distribution
+        function generateNormalSamples(mu, sigma, n) {
+            let samples = [];
+            for (let i = 0; i < n; i++) {
+                // Box-Muller transform to generate normal distribution
+                let u1 = Math.random();
+                let u2 = Math.random();
+                let z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+                samples.push(mu + sigma * z);
+            }
+            return samples;
+        }
+
+        // Calculate sample averages
+        function calculateSampleAverages(samples) {
+            let sampleAverages = [];
+            let cumulativeSum = 0;
+            for (let i = 0; i < samples.length; i++) {
+                cumulativeSum += samples[i];
+                sampleAverages.push(cumulativeSum / (i + 1));
+            }
+            return sampleAverages;
+        }
+
+        // Generate samples and calculate sample averages
+        const samples = generateNormalSamples(mu, sigma, nSamples);
+        const sampleAverages = calculateSampleAverages(samples);
+
+        // Setup Chart.js
+        const ctx = document.getElementById('llnChart').getContext('2d');
+        const llnChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: nSamples }, (_, i) => i + 1),
+                datasets: [{
+                    label: 'Sample Average',
+                    data: sampleAverages,
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'Number of Samples'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Sample Average'
+                        }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: mu,
+                                yMax: mu,
+                                borderColor: 'red',
+                                borderWidth: 2,
+                                label: {
+                                    content: 'Expected Value',
+                                    enabled: true,
+                                    position: 'start'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
