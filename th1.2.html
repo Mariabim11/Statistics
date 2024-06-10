@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary of Law of Large Numbers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #4c53af;
+        }
+        .formula {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: "Courier New", Courier, monospace;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<h1>Summary of the Document</h1>
+
+<p>The document discusses the Law of Large Numbers (LLN) in probability theory, which describes the results of performing the same experiment multiple times. LLN suggests that as the number of trials increases, the average of the results gets closer to the expected value. This law is crucial in ensuring that the mean of the results approximates the mean of the distribution from which they came, especially when dealing with large numbers of trials.</p>
+
+<p>The LLN has two main versions: the Weak Law of Large Numbers (WLLN) and the Strong Law of Large Numbers (SLLN). The WLLN states that the sample mean converges in probability toward the expected value of the distribution. On the other hand, the SLLN asserts that this convergence almost certainly occurs, assuming stricter conditions on the random variables considered. The WLLN is more broadly applicable, often used when the conditions of the SLLN are not entirely met.</p>
+
+<h2>Weak Law of Large Numbers (WLLN)</h2>
+
+<p>Before delving into WLLN, the document defines the sample mean for independent and identically distributed (i.i.d.) random variables \(X_1, X_2, \ldots, X_n\):</p>
+
+<div class="formula">
+\[ \overline{X_n} = \frac{X_1 + X_2 + \cdots + X_n}{n} \]
+</div>
+
+<p>By the linearity of expectation, the expected value \(E[\overline{X_n}]\) is equal to the expected value \(E[X]\). The variance of \(\overline{X_n}\) is given by:</p>
+
+<div class="formula">
+\[ \text{Var}(\overline{X_n}) = \frac{\text{Var}(X)}{n} \]
+</div>
+
+<p>The WLLN theorem is stated and proved as follows:</p>
+
+<div class="formula">
+\[ \lim_{n \to \infty} P(|\overline{X_n} - \mu| \geq \epsilon) = 0 \]
+</div>
+
+<p>Using Chebyshev's inequality, it is shown that:</p>
+
+<div class="formula">
+\[ 0 \leq P(|\overline{X_n} - \mu| > \epsilon) \leq \frac{\text{Var}(\overline{X_n})}{\epsilon^2} = \frac{\sigma^2}{n \epsilon^2} \to 0 \text{ as } n \to \infty \]
+</div>
+
+<h2>Strong Law of Large Numbers (SLLN)</h2>
+
+<p>The SLLN, also known as Kolmogorov’s law, states that the sample average converges almost surely to the expected value.</p>
+
+<div class="formula">
+\[ \overline{M_n} = \frac{X_1 + X_2 + \cdots + X_n}{n} \to \mu \]
+</div>
+
+<p>Using Chebyshev’s inequality and the Borel-Cantelli Lemma, it is shown that the probability of the event \(\left|\frac{1}{n} \sum_{i=1}^n X_i - \mu \right| \geq \epsilon\) occurring infinitely often is zero, implying almost sure convergence of the sample mean to \(\mu\).</p>
+
+<h2>Simulation</h2>
+
+<p>To illustrate the LLN, a simulation of rolling dice is conducted. The simulation involves 10,000 trials of rolling a fair six-sided die, calculating the cumulative average of the dice rolls as the number of trials increases. The expected value of rolling a fair die is 3.5 (the average of numbers 1 to 6). The simulation visually demonstrates how the cumulative average approaches this expected value as the number of trials increases, providing a practical example of the LLN in action.</p>
+
+<h2>Conclusion</h2>
+
+<p>The document provides a comprehensive overview of the Law of Large Numbers, explaining both the weak and strong versions of the law and their implications. Through theoretical proofs and a practical simulation, it illustrates how the average outcome of repeated trials converges to the expected value, reinforcing the significance of LLN in probability theory. This concept is fundamental in understanding how large sample sizes can lead to more accurate and reliable statistical predictions.</p>
+
+</body>
+</html>
